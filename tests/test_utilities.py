@@ -5,7 +5,7 @@ test for the core.py file
 
 import unittest
 
-from scopa.input import ssquare
+from scopa.utilities import ssquare
 #export PYTHONPATH=/Users/andrea/Desktop/computing_methods/smartsquare/  per farlo funzionare...
 
 
