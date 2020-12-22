@@ -1,7 +1,7 @@
 API documentation
 =================
 
-input
------
-.. automodule:: input
+utilities
+---------
+.. automodule:: utilities
    :members:

@@ -1,12 +1,13 @@
-"""Defines the main functions importing images from the camera.
+"""Defines main utilities functions.
 """
 
+import sys
 import numpy as np
 import cv2
 import urllib.request
 import ssl
 
-def ssquare(x):
+def ssquare(x):             # RICORDA DI ELIMINARLA...
     return x*x
 
 
@@ -29,23 +30,39 @@ def import_img(url, show_video = 0, save_img = None):
     :type save_img: string
 
     :return: img as numpy 3d-array
-    :rtype: numpy nd-array
-
+    :rtype: numpy.ndarray
     '''
 
-    url = 'http://192.168.1.5:8080/shot.jpg'
-
-    img = cv2.imread(name_pic,cv2.IMREAD_COLOR)
-
-    print('Take a picture')
-    if img is None:
-        while True:
+    try:
+        if show_video==0:
             imgResp = urllib.request.urlopen(url)
             imgNp = np.array(bytearray(imgResp.read()), dtype=np.uint8)
             img = cv2.imdecode(imgNp, -1)
-            cv2.imshow('IPWebcam',img)
-            q = cv2.waitKey(100)  # wait 10 ms and then proceeds
-            if q == ord("q"):
-                cv2.imwrite(name_pic,img)
-                break;
-            cv2.destroyAllWindows()
+        elif show_video==1:
+            while True:
+                imgResp = urllib.request.urlopen(url)
+                imgNp = np.array(bytearray(imgResp.read()), dtype=np.uint8)
+                img = cv2.imdecode(imgNp, -1)
+                cv2.imshow('IPWebcam',img)
+                q = cv2.waitKey(10)  # wait 10 ms and then proceeds
+                if q == ord("q"):
+                    cv2.destroyAllWindows()
+                    break
+    except urllib.error.URLError as urlerr:
+        print(urlerr)
+        inp = input('Error: camera not connected. Try again? (y/n) [y]: ')
+        if inp == 'y' or inp == '':
+            img = import_img(url, show_video, save_img)
+            return img
+        elif inp == 'n':
+            sys.exit("Error: camera not connected")
+
+    if save_img is not None:
+        cv2.imwrite(save_img+'.jpg',img)
+
+    return img
+
+
+
+
+#print(type(import_img('http://192.168.1.5:8080/shot.jpg', 0, 'try')))
