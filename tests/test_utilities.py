@@ -3,9 +3,8 @@
 
 import unittest
 import cv2
-import os
 
-from scopa.utilities import get_cards
+from scopa.utilities import get_cards, show_image
 #export PYTHONPATH=/Users/andrea/Desktop/computing_methods/scopa
 
 

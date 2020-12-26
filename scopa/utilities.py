@@ -156,12 +156,3 @@ def get_cards(img, min_area, verbouse=False):
             show_image(imm, f'Card {i} of {n_cards}')
 
     return np.array(cards_img)
-
-
-
-
-
-
-#img = import_img('http://192.168.1.5:8080/shot.jpg', 1)
-#img = cv2.imread('img/get_cards0.jpg',cv2.IMREAD_COLOR)
-#get_cards(img, 50, True)
