@@ -2,14 +2,20 @@
 '''
 
 import unittest
+import cv2
 
-from scopa.utilities import ssquare
-#export PYTHONPATH=/Users/andrea/Desktop/computing_methods/smartsquare/  per farlo funzionare...
+from scopa.utilities import get_cards
+#export PYTHONPATH=/Users/andrea/Desktop/computing_methods/scopa
 
 
-class TestCore(unittest.TestCase):      # classes con CamelCase
-    def test_float(self):                   # Metodi/Funzioni con '_'
-        self.assertAlmostEqual(ssquare(2.), 4.)
+class TestCore(unittest.TestCase):
+    def test_get_cards(self):
+        img0 = cv2.imread('test_img/get_cards0.jpg',cv2.IMREAD_COLOR)
+        lenght = len(get_cards(img0, 50))
+        self.assertEqual(lenght, 0, f'get_cards test failed: founded {lenght}, instead of 0')
+        img3 = cv2.imread('test_img/get_cards3.jpg',cv2.IMREAD_COLOR)
+        lenght = len(get_cards(img3, 50))
+        self.assertEqual(lenght, 3, f'get_cards test failed: founded {lenght}, instead of 3')
 
 
 
