@@ -4,13 +4,14 @@
 import numpy as np
 import cv2
 import sys
-import time
+import random
 
 from scopa.utilities import show_image, import_img, get_cards
 #export PYTHONPATH=/Users/andrea/Desktop/computing_methods/scopa
 
+import time
 #optimal_area =
-
+min_area = 500
 
 def transform_img(img, angle = 0, scale = 1, tr = (0,0)):
 
@@ -49,7 +50,7 @@ def transform_img(img, angle = 0, scale = 1, tr = (0,0)):
     return img
 
 
-def tranform_img_args(img, min_area):
+def transform_img_args(img, min_area):
 
     '''Function that, given an image with a unique card, returns a tuple with the
        argument required by the function transform_img in order to get an image with
@@ -96,16 +97,6 @@ def tranform_img_args(img, min_area):
 
     return img, angle, scale, tr
 
-'''
-img = cv2.imread('img/pic_0.jpg')
-show_image(img)
-ret = tranform_img_args(img)
-print(ret[1:])
-
-img = transform_img(*ret)
-show_image(img)
-'''
-
 
 def n_card_to_string(numb):
     if numb<11:
@@ -151,7 +142,7 @@ def import_deck(dir, start = 1):
                 img[msk!=0] = (0,0,255)
             show_image(img)
             # no parenthesis!
-        img = transform_img(*tranform_img_args(img_array[0], 500))
+        img = transform_img(*transform_img_args(img_array[0], min_area))
 
         show_image(img, f'{n_card_to_string(i)}', 1000)
         inp = input('Save image? (y,n) [y]: ')
@@ -161,26 +152,52 @@ def import_deck(dir, start = 1):
         elif inp != 'n':
             print(f'Invalid input: {inp}')
 
-import_deck('deck',29)
-
-'''
-img = cv2.imread('deck/5_harts(cuori).jpg')
-show_image(img, f'{n_card_to_string}')
-img_array = get_cards(img, 50, verbouse=False)
-assert(len(img_array)==1)
-args = tranform_img_args(img_array[0])
-print(args[1:], type(args[0]), args[0].shape)
-img = transform_img(*args)
-show_image(img, f'{n_card_to_string}')
-img_array = get_cards(img, 50, verbouse=False)
-assert(len(img_array)==1)
-args = tranform_img_args(img_array[0])
-print(args[1:], type(args[0]), args[0].shape)
-img = transform_img(*args)
-show_image(img, f'{n_card_to_string}')
-'''
+import_deck('deck',41)
 
 '''TO DO:
     - credo sia interesssante ridurre le immagini a erray (720,720,3) di 0 e 1 dividendo per 255 e arrotondando (anche meno di 720)
     - test e documentation
+'''
+
+    # some image hadling
+
+for i in range (41,41):
+    img = cv2.imread(f'deck0/{n_card_to_string(i)}.jpg')
+    img = (img/255-0.15).round().astype(np.uint8)
+    img = img*255
+    cv2.imwrite(f'deck0m/{n_card_to_string(i)}.jpg', img)
+
+for i in range (41,41):
+    img = cv2.imread(f'deck0/{n_card_to_string(i)}.jpg')
+    img1 = img[:,:,2] #only red
+    #img = (img/255-0.15).round().astype(np.uint8)
+    #img = img*255
+    cv2.imwrite(f'deck0m1/{n_card_to_string(i)}.jpg', img1)
+
+
+def generate_card(layers=1):
+    card = random.randrange(1,41)
+    angle=random.uniform(0,360)
+    scale=random.uniform(0.9,1.1)
+
+    if layers == 1:
+        print('deck0m1/'+n_card_to_string(card)+'.jpg')
+        img = cv2.imread('deck0m1/'+n_card_to_string(card)+'.jpg')
+    elif layers == 3:
+        print('deck0/'+n_card_to_string(card)+'.jpg')
+        img = cv2.imread('deck0/'+n_card_to_string(card)+'.jpg')
+    image_shape = img.shape
+    marg = 5
+    tr=(random.randrange(-int(image_shape[0]/2-image_shape[0]/marg), int(image_shape[0]/2-image_shape[0]/marg)),
+        random.randrange(-int(image_shape[1]/2-image_shape[1]/marg), int(image_shape[1]/2-image_shape[1]/marg)))
+
+    img = transform_img(img, angle, scale, tr)
+    show_image(img, 'generated card', 100)
+    return img
+
+'''
+inp = 3
+while inp == 1 or inp == 3:
+    generate_card(inp)
+    inp = int(input('inp: '))
 '''
