@@ -31,7 +31,7 @@ def transform_img(img, angle = 0, scale = 1, tr = (0,0)):
     :param tr: tuple containing the components of the translation vector (in pixel unit)
     :type tr: tuple
 
-    :return: rotated image with same shape of the input one.
+    :return: transformed image with same shape of the input one.
     :rtype: numpy.ndarray
     '''
 
@@ -99,6 +99,11 @@ def transform_img_args(img, min_area):
 
 
 def n_card_to_string(numb):
+
+    '''Function returning a string with card-name given the corresponding
+       number (for example 17 is t_diamonds)
+    '''
+
     if numb<11:
         return n_card_to_number(numb%10)+'_harts(cuori)'
     elif numb<21:
@@ -117,17 +122,24 @@ def n_card_to_number(numb):
     elif numb%10 == 0: return 'K'
     else: return str(numb)
 
-
-'''
-test:
-    - presa l'immagine img/pic_0.jpg portalaal centro
-    - verifica che se ci fai transform_img_arg i results vengono circa zero
-    - verifica che se la sposti e giri un po' i parametri vengono l'opposto di quello che hai fatto (circa)
-'''
-
 url = 'http://192.168.1.5:8080'
 
-def import_deck(dir, start = 1):
+def import_deck(path, url, start = 1):
+
+    '''Function importing the images of the cards in the deck.
+
+    :param path: path to the directory where the deck is saved(the directory must
+                 be previously created).
+    :type path: string
+
+    :param url: web address (Uniform Resource Locator) of the desidered IPcamera.
+    :type url: string
+
+    :param start: number of the starting acquisition card. Default to 1 (corresponding to
+                  A_harts)
+    :type start: int
+    '''
+
     print('altezza circa 45 cm')
     i = start
     while i<41:
@@ -147,12 +159,10 @@ def import_deck(dir, start = 1):
         show_image(img, f'{n_card_to_string(i)}', 1000)
         inp = input('Save image? (y,n) [y]: ')
         if inp == 'y' or inp == '':
-            cv2.imwrite(dir+f'/{n_card_to_string(i)}.jpg', img)
+            cv2.imwrite(path+f'/{n_card_to_string(i)}.jpg', img)
             i = i+1
         elif inp != 'n':
             print(f'Invalid input: {inp}')
-
-import_deck('deck',41)
 
 '''TO DO:
     - credo sia interesssante ridurre le immagini a erray (720,720,3) di 0 e 1 dividendo per 255 e arrotondando (anche meno di 720)
@@ -175,7 +185,23 @@ for i in range (41,41):
     cv2.imwrite(f'deck0m1/{n_card_to_string(i)}.jpg', img1)
 
 
-def generate_card(layers=1):
+def generate_card(layers=3):
+
+    '''Function generating an image conteining a random card in a random position
+    starting from the images in deck0m1 and deck0 directories.
+
+    :param layers: specifies the type of the image generated (colored if layers = 3,
+                   black&white corresponding to the red layer of the original image if layers = 1).
+                   Default to 3.
+    :type layers: int
+
+    :return: rotated image with same shape of the input one.
+    :rtype: numpy.ndarray
+
+    note: see scopa/training_data for more information about images in deck0m1 and deck0
+    directories.
+    '''
+
     card = random.randrange(1,41)
     angle=random.uniform(0,360)
     scale=random.uniform(0.9,1.1)
