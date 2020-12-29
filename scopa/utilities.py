@@ -54,6 +54,7 @@ def import_img(url, show_video = False, save_img = None):
     :rtype: numpy.ndarray
     '''
 
+    url = url + '/shot.jpg'
     try:
         if show_video:
             while True:
@@ -93,7 +94,7 @@ def get_cards(img, min_area, verbouse=False):
     :param img: image from which extract cards.
     :type img: numpy.ndarray
 
-    :param min_area: minimum of the area recognised as a (possible) card.
+    :param min_area: minimum contour-area (in pixels) recognised as a (possible) card.
     :type img: int
 
     :param verbouse: if True shows the main steps done to get the result
@@ -118,7 +119,7 @@ def get_cards(img, min_area, verbouse=False):
         #       d:  Diameter of each pixel neighborhood that is used during filtering.
         #       sigmaColor:	Filter sigma in the color space
         #       sigmaSpace:	Filter sigma in the coordinate space
-    edges_img = cv2.Canny(filtered_img,100,200)
+    edges_img = cv2.Canny(filtered_img,120,200)
         # the two parameters refer to:
         #       largest value:  used to find initial segments of strong edges
         #       smallest value: lower bound for weak edges
