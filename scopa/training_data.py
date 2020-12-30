@@ -12,6 +12,7 @@ from scopa.utilities import show_image, import_img, get_cards
 import time
 #optimal_area =
 min_area = 500
+url = 'http://192.168.1.5:8080'
 
 def transform_img(img, angle = 0, scale = 1, tr = (0,0)):
 
@@ -122,7 +123,6 @@ def n_card_to_number(numb):
     elif numb%10 == 0: return 'K'
     else: return str(numb)
 
-url = 'http://192.168.1.5:8080'
 
 def import_deck(path, url, start = 1):
 
@@ -163,11 +163,6 @@ def import_deck(path, url, start = 1):
             i = i+1
         elif inp != 'n':
             print(f'Invalid input: {inp}')
-
-'''TO DO:
-    - credo sia interesssante ridurre le immagini a erray (720,720,3) di 0 e 1 dividendo per 255 e arrotondando (anche meno di 720)
-    - test e documentation
-'''
 
     # some image hadling
 
@@ -218,12 +213,12 @@ def generate_card(layers=3):
         random.randrange(-int(image_shape[1]/2-image_shape[1]/marg), int(image_shape[1]/2-image_shape[1]/marg)))
 
     img = transform_img(img, angle, scale, tr)
-    show_image(img, 'generated card', 100)
-    return img
+    return (img, card)
 
 '''
 inp = 3
 while inp == 1 or inp == 3:
-    generate_card(inp)
+    ret = generate_card(inp)
+    show_image(ret[0], 'generated card', 100)
     inp = int(input('inp: '))
 '''
