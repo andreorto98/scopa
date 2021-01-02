@@ -5,6 +5,8 @@ import numpy as np
 import cv2
 import sys
 import random
+import glob
+import re
 
 from scopa.utilities import show_image, import_img, get_cards
 #export PYTHONPATH=/Users/andrea/Desktop/computing_methods/scopa
@@ -124,12 +126,41 @@ def n_card_to_number(numb):
     else: return str(numb)
 
 
+def string_to_n_card(str):
+
+    '''Function reversing n_card_to_string.
+    '''
+
+    if str.startswith('.'):
+        words = re.split('_|/|.j', str)[2:4]
+    else: words = str.split('_')
+    if words[1] == 'harts(cuori)':
+        return char_to_number(words[0])
+    elif words[1] == 'diamonds(quadri)':
+        return char_to_number(words[0])+10
+    elif words[1] == 'clubs(fiori)':
+        return char_to_number(words[0])+20
+    elif words[1] == 'spades(picche)':
+        return char_to_number(words[0])+30
+
+def char_to_number(str):
+
+    '''Function reversing n_card_to_number
+    '''
+
+    if str == 'A': return 1
+    if str == 'J': return 8
+    if str == 'Q': return 9
+    if str == 'K': return 10
+    else: return int(str)
+
+
 def import_deck(path, url, start = 1):
 
     '''Function importing the images of the cards in the deck.
 
-    :param path: path to the directory where the deck is saved(the directory must
-                 be previously created).
+    :param path: path to the directory where the deck is going to be saved(the directory
+                 must be previously created).
     :type path: string
 
     :param url: web address (Uniform Resource Locator) of the desidered IPcamera.
@@ -180,9 +211,9 @@ for i in range (41,41):
     cv2.imwrite(f'deck0m1/{n_card_to_string(i)}.jpg', img1)
 
 
-def generate_card(layers=3):
+def generate_cards(n=1, layers=3, ang = True):
 
-    '''Function generating an image conteining a random card in a random position
+    '''Function generating an array of images each conteining a random card in a random position
     starting from the images in deck0m1 and deck0 directories.
 
     :param layers: specifies the type of the image generated (colored if layers = 3,
@@ -195,30 +226,45 @@ def generate_card(layers=3):
 
     note: see scopa/training_data for more information about images in deck0m1 and deck0
     directories.
+
+    note: MIGLIORA DOC ANGGGGGG!!
     '''
 
-    card = random.randrange(1,41)
-    angle=random.uniform(0,360)
-    scale=random.uniform(0.9,1.1)
-
+    cards = np.random.randint(1,41,n, np.uint8)
+    if ang:
+        angles= np.random.uniform(0,360,n)
+    else:
+        angles = np.full(n, 0.)
+    scales= np.random.uniform(0.9,1.1,n)
     if layers == 1:
-        print('deck0m1/'+n_card_to_string(card)+'.jpg')
-        img = cv2.imread('deck0m1/'+n_card_to_string(card)+'.jpg')
+        inp_images = sorted([file for file in glob.glob("./deck0m1/*.jpg")], key = string_to_n_card)
     elif layers == 3:
-        print('deck0/'+n_card_to_string(card)+'.jpg')
-        img = cv2.imread('deck0/'+n_card_to_string(card)+'.jpg')
-    image_shape = img.shape
-    marg = 5
-    tr=(random.randrange(-int(image_shape[0]/2-image_shape[0]/marg), int(image_shape[0]/2-image_shape[0]/marg)),
-        random.randrange(-int(image_shape[1]/2-image_shape[1]/marg), int(image_shape[1]/2-image_shape[1]/marg)))
+        inp_images = sorted([file for file in glob.glob("./deck0/*.jpg")], key = string_to_n_card)
+    inp_images = [cv2.imread(file) for file in inp_images]
+    image_shape = inp_images[0].shape
 
-    img = transform_img(img, angle, scale, tr)
-    return (img, card)
+    marg = 5
+    max_tr_x = int(image_shape[0]/2-image_shape[0]/marg)
+    max_tr_y = int(image_shape[1]/2-image_shape[1]/marg)
+    tr_x = np.random.randint(0,max_tr_x,n)
+    tr_y = np.random.randint(0,max_tr_y,n)
+
+    images = [transform_img(inp_images[cards[i]-1], angles[i], scales[i], (tr_x[i], tr_y[i]))
+              for i in range(len(cards))]
+
+    return np.array(images), np.array(cards)
 
 '''
 inp = 3
 while inp == 1 or inp == 3:
-    ret = generate_card(inp)
-    show_image(ret[0], 'generated card', 100)
+    ret = generate_cards(1, inp, False)
+    show_image(ret[0][0], 'generated card', 100)
     inp = int(input('inp: '))
+'''
+
+'''
+start = time.time()
+ret = generate_cards(1000, 3)
+print(type(ret[0][0]), type(ret[1][0]))
+print("--- %s seconds ---" % (time.time() - start))
 '''
