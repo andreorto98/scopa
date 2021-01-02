@@ -21,19 +21,14 @@ def transform_img(img, angle = 0, scale = 1, tr = (0,0)):
     '''Function rotating, rescaling and translating the card inside an image.
     No care about border points is taken (added points are black and points going
     outside the image are cutted).
-
     :param img: image to be rotated.
     :type img: numpy.ndarray
-
     :param angle: angle of rotation in degrees. Default to 0.
     :type angle: float
-
     :param scale: isotropic scale factor. Default to 1.
     :type scale: float
-
     :param tr: tuple containing the components of the translation vector (in pixel unit)
     :type tr: tuple
-
     :return: transformed image with same shape of the input one.
     :rtype: numpy.ndarray
     '''
@@ -58,13 +53,10 @@ def transform_img_args(img, min_area):
     '''Function that, given an image with a unique card, returns a tuple with the
        argument required by the function transform_img in order to get an image with
        the card in the center and vertically orientated.
-
        :param img: input image
        :type img: numpy.ndarray
-
        :param min_area: minimum contour-area (in pixels) recognised as a (possible) card.
        :type img: int
-
        :return: tuple (img, angle, scale, tr)
        :rtype: tuple
     '''
@@ -158,14 +150,11 @@ def char_to_number(str):
 def import_deck(path, url, start = 1):
 
     '''Function importing the images of the cards in the deck.
-
     :param path: path to the directory where the deck is going to be saved(the directory
                  must be previously created).
     :type path: string
-
     :param url: web address (Uniform Resource Locator) of the desidered IPcamera.
     :type url: string
-
     :param start: number of the starting acquisition card. Default to 1 (corresponding to
                   A_harts)
     :type start: int
@@ -215,18 +204,14 @@ def generate_cards(n=1, layers=3, ang = True):
 
     '''Function generating an array of images each conteining a random card in a random position
     starting from the images in deck0m1 and deck0 directories.
-
     :param layers: specifies the type of the image generated (colored if layers = 3,
                    black&white corresponding to the red layer of the original image if layers = 1).
                    Default to 3.
     :type layers: int
-
     :return: rotated image with same shape of the input one.
     :rtype: numpy.ndarray
-
     note: see scopa/training_data for more information about images in deck0m1 and deck0
     directories.
-
     note: MIGLIORA DOC ANGGGGGG!!
     '''
 
@@ -246,21 +231,21 @@ def generate_cards(n=1, layers=3, ang = True):
     marg = 5
     max_tr_x = int(image_shape[0]/2-image_shape[0]/marg)
     max_tr_y = int(image_shape[1]/2-image_shape[1]/marg)
-    tr_x = np.random.randint(-max_tr_x,max_tr_x,n)
-    tr_y = np.random.randint(-max_tr_y,max_tr_y,n)
+    tr_x = np.random.randint(0,max_tr_x,n)
+    tr_y = np.random.randint(0,max_tr_y,n)
 
     images = [transform_img(inp_images[cards[i]-1], angles[i], scales[i], (tr_x[i], tr_y[i]))
               for i in range(len(cards))]
 
     return np.array(images), np.array(cards)
 
-
+'''
 inp = 3
 while inp == 1 or inp == 3:
     ret = generate_cards(1, inp, False)
     show_image(ret[0][0], 'generated card', 100)
     inp = int(input('inp: '))
-
+'''
 
 '''
 start = time.time()
