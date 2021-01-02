@@ -132,7 +132,7 @@ def string_to_n_card(str):
     '''
 
     if str.startswith('.'):
-        words = re.split('_|/|.j', str)[2:4]
+        words = re.split('_|/|.j', str)[-3:-1]
     else: words = str.split('_')
     if words[1] == 'harts(cuori)':
         return char_to_number(words[0])
