@@ -120,12 +120,14 @@ def get_cards(img, min_area, verbouse=False, to_model=False, margin=25):
     :type verbouse: bool
 
     :param to_model: if True the returned images are 256x256 shaped and contain the card image
-                     thresholded with the lower bound (1,1,1) and the given upper_bound.
+                     thresholded; the lower_bound is fixed to (1,1,1), the upper_bound is calculated
+                     basing on the white part of each card and on the parameter margin.
                      Default to False.
     :type to_model: bool
 
-    :param upper_bound: inclusive upper boundary condition used to threshold the images (BGR)
-    :type upper_bound: list of int
+    :param margin: parameter regulating the margin in the upper_bound threshold in BG. (see code)
+                   Default to 25.
+    :type margin: int
 
 
     :return: array of images

@@ -11,12 +11,6 @@ import re
 from scopa.utilities import show_image, import_img, get_cards, get_area
 #export PYTHONPATH=/Users/andrea/Desktop/computing_methods/scopa
 
-import time
-
-url = 'http://192.168.1.9:8080'
-optimal_area = get_area(500, url = url)
-print(optimal_area)
-min_area = optimal_area*0.7
 
 def transform_img(img, angle = 0, scale = 1, tr = (0,0), white = [0,0,0]):
 
@@ -89,7 +83,7 @@ def transform_img_args(img, min_area, trasl = True):
     scale = 1
     print(cv2.contourArea(contour))
     #tr
-    if trasl::
+    if trasl:
         H, W = img.shape[0:2]
         tr = (int(W/2 - rect[0][0]), int(H/2 - rect[0][1]))
     else:
@@ -252,6 +246,7 @@ def generate_cards(n=1, layers=3, ang = True):
     return np.array(images), np.array(cards)
 
 '''
+# test generate card
 inp = 3
 while inp == 1 or inp == 3:
     ret = generate_cards(1, inp)
@@ -261,10 +256,19 @@ while inp == 1 or inp == 3:
 '''
 
 '''
+#test time of generate cards
+import time
 start = time.time()
 ret = generate_cards(1000, 3)
 print(type(ret[0][0]), type(ret[1][0]))
 print("--- %s seconds ---" % (time.time() - start))
 '''
 
+'''
+#import deck
+url = 'http://192.168.1.9:8080'
+optimal_area = get_area(500, url = url)
+print(optimal_area)
+min_area = optimal_area*0.7
 import_deck(path = './deck_thr', url = url, start = 21)
+'''
