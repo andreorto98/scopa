@@ -86,7 +86,25 @@ def import_img(url, show_video = False, save_img = None):
     return img
 
 
-def get_cards(img, min_area, verbouse=False):
+def contour_to_centre(contour):
+    mom = cv2.moments(contour)
+    c_x = int(mom['m10']/mom['m00'])
+    c_y = int(mom['m01']/mom['m00'])
+    return c_x, c_y
+
+
+def get_area(min_area, img = None, url='', save_img=None):
+    if img is None:
+        print('Please, insert a card.')
+        img = import_img(url, True, save_img)
+    filtered_img = cv2.bilateralFilter(img, 40,80,80)
+    edges_img = cv2.Canny(filtered_img,120,200)
+    contours, hierarchy = cv2.findContours(edges_img, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
+    assert(len(contours)==1)
+    return cv2.contourArea(contours[0])
+
+
+def get_cards(img, min_area, verbouse=False, to_model=False, margin=25):
 
     '''Function that given an image returns an array of same shaped images each
     containing only one card.
@@ -99,7 +117,16 @@ def get_cards(img, min_area, verbouse=False):
 
     :param verbouse: if True shows the main steps done to get the result
                      (always press q to close the windows).Default to False.
-    :type img: bool
+    :type verbouse: bool
+
+    :param to_model: if True the returned images are 256x256 shaped and contain the card image
+                     thresholded with the lower bound (1,1,1) and the given upper_bound.
+                     Default to False.
+    :type to_model: bool
+
+    :param upper_bound: inclusive upper boundary condition used to threshold the images (BGR)
+    :type upper_bound: list of int
+
 
     :return: array of images
     :rtype: numpy.ndarray
@@ -117,7 +144,6 @@ def get_cards(img, min_area, verbouse=False):
     filtered_img = cv2.bilateralFilter(img, 40,80,80)
         # the three parameters refer to:
         #       d:  Diameter of each pixel neighborhood that is used during filtering.
-        #       sigmaColor:	Filter sigma in the color space
         #       sigmaSpace:	Filter sigma in the coordinate space
     edges_img = cv2.Canny(filtered_img,120,200)
         # the two parameters refer to:
@@ -129,20 +155,33 @@ def get_cards(img, min_area, verbouse=False):
         # cv2.CHAIN_APPROX_SIMPLE: compresses horizontal, vertical, and diagonal segments
         #                          and leaves only their end points
         # contours is a list whose elements are np.arrays containing the coordinates of border_points
+        #                   its dimensions are len_contours x len_border_point x 1 x 2(x_y coordinates)
     areas = [cv2.contourArea(cont) for cont in contours]
     cards_contour = [contours[i] for i in range(len(areas)) if areas[i] > min_area]
-        # selection of the (possible) cards
+    # selection of the (possible) cards
 
     cards_img = []
 
     for i in range(len(cards_contour)):
         mask = np.zeros_like(img[:,:,0])
         cv2.drawContours(mask, cards_contour, i, 255, -1)
-            # We create a mask where white is what we want, black is everything else
+            # We create a mask where white is the card, black is everything else
             # note that argument -1 in drawContours generates filled contour in mask
         out = np.zeros_like(img)
-        out[mask == 255] = img[mask == 255]
+        out[mask == 255] = filtered_img[mask == 255]
             # Use the mask to select the interesting pixels
+        if to_model:
+            cv2.drawContours(out, cards_contour, i, (0,0,255), 3)
+            rect = cv2.minAreaRect(cards_contour[i])    # rect=((x_c,y_c), (W, H), angle)
+            w = int(rect[1][1]*np.sin(rect[2]*np.pi/180)/2.35)
+            h = int(rect[1][1]*np.cos(rect[2]*np.pi/180)/2.35)
+            x_conf = int(rect[0][0]) + w
+            y_conf = int(rect[0][1]) - h
+            #cv2.circle(out, (x_conf, y_conf), 4, (255,0,0),-1)
+            out = cv2.inRange(out, np.array([1,1,1]), np.array([out[y_conf,x_conf,0]-margin, out[y_conf,x_conf,1]-margin, 255]))
+            out = out[int(rect[0][1])-128:int(rect[0][1])+128,int(rect[0][0])-128:int(rect[0][0])+128]
+            #show_image(out)
+
         cards_img.append(out)
 
     if verbouse:

@@ -8,22 +8,24 @@ import random
 import glob
 import re
 
-from scopa.utilities import show_image, import_img, get_cards
+from scopa.utilities import show_image, import_img, get_cards, get_area
 #export PYTHONPATH=/Users/andrea/Desktop/computing_methods/scopa
 
 import time
-#optimal_area =
-min_area = 500
-url = 'http://192.168.1.5:8080'
 
-def transform_img(img, angle = 0, scale = 1, tr = (0,0)):
+url = 'http://192.168.1.9:8080'
+optimal_area = get_area(500, url = url)
+print(optimal_area)
+min_area = optimal_area*0.7
+
+def transform_img(img, angle = 0, scale = 1, tr = (0,0), white = [0,0,0]):
 
     '''Function rotating, rescaling and translating the card inside an image.
     No care about border points is taken (added points are black and points going
     outside the image are cutted).
     :param img: image to be rotated.
     :type img: numpy.ndarray
-    :param angle: angle of rotation in degrees. Default to 0.
+    :param angle: angle of rotation in degrees counterclockwise. Default to 0.
     :type angle: float
     :param scale: isotropic scale factor. Default to 1.
     :type scale: float
@@ -36,8 +38,8 @@ def transform_img(img, angle = 0, scale = 1, tr = (0,0)):
     img_center = (int(img.shape[0]/2), int(img.shape[1]/2))
 
     trasl_mat = np.zeros((2,3))
-    trasl_mat[0,2]=trasl_mat[0,2]+tr[0]
-    trasl_mat[1,2]=trasl_mat[1,2]+tr[1]
+    trasl_mat[0,2]=tr[0]
+    trasl_mat[1,2]=tr[1]
     trasl_mat[0,0] = trasl_mat[1][1] = 1
     img = cv2.warpAffine(img, trasl_mat, img.shape[0:2], flags=cv2.INTER_LINEAR)
         # applies the transformation to each pixel:
@@ -48,7 +50,7 @@ def transform_img(img, angle = 0, scale = 1, tr = (0,0)):
     return img
 
 
-def transform_img_args(img, min_area):
+def transform_img_args(img, min_area, trasl = True):
 
     '''Function that, given an image with a unique card, returns a tuple with the
        argument required by the function transform_img in order to get an image with
@@ -87,10 +89,13 @@ def transform_img_args(img, min_area):
     scale = 1
     print(cv2.contourArea(contour))
     #tr
-    H, W = img.shape[0:2]
-    tr = (int(W/2 - rect[0][0]), int(H/2 - rect[0][1]))
+    if trasl::
+        H, W = img.shape[0:2]
+        tr = (int(W/2 - rect[0][0]), int(H/2 - rect[0][1]))
+    else:
+        tr = (0,0)
 
-    return img, angle, scale, tr
+    return img, angle, scale, (0,0)
 
 
 def n_card_to_string(numb):
@@ -160,26 +165,26 @@ def import_deck(path, url, start = 1):
     :type start: int
     '''
 
-    print('altezza circa 45 cm')
+    print('altezza circa 40 cm')
     i = start
     while i<41:
         print(i)
         print(f'Insert {n_card_to_string(i)}')
         img = import_img(url, True)
-        img_array = get_cards(img, 500, verbouse=False)
+        img_array = get_cards(img, 500, verbouse=False, to_model=False)
         if len(img_array)!=1:
             print(f'Error: founded {len(img_array)} objects instead of 1')
             for i in range(0,len(img_array)):
                 msk = img_array[i][:,:,0] + img_array[i][:,:,1] + img_array[i][:,:,2]
                 img[msk!=0] = (0,0,255)
             show_image(img)
-            # no parenthesis!
-        img = transform_img(*transform_img_args(img_array[0], min_area))
-
-        show_image(img, f'{n_card_to_string(i)}', 1000)
+        img = transform_img(*transform_img_args(img_array[0], min_area, trasl = False))
+        img_array = get_cards(img, 500, verbouse=False, to_model=True, margin=20)
+        show_image(img_array[0], f'{n_card_to_string(i)}', 1000)
         inp = input('Save image? (y,n) [y]: ')
         if inp == 'y' or inp == '':
-            cv2.imwrite(path+f'/{n_card_to_string(i)}.jpg', img)
+            print(path+f'/{n_card_to_string(i)}.jpg')
+            cv2.imwrite(path+f'/{n_card_to_string(i)}.jpg', img_array[0])
             i = i+1
         elif inp != 'n':
             print(f'Invalid input: {inp}')
@@ -198,6 +203,11 @@ for i in range (41,41):
     #img = (img/255-0.15).round().astype(np.uint8)
     #img = img*255
     cv2.imwrite(f'deck0m1/{n_card_to_string(i)}.jpg', img1)
+
+for i in range (41,41):
+    img = cv2.imread(f'deck0/{n_card_to_string(i)}.jpg')
+    img = cv2.Canny(img,120,200)
+    cv2.imwrite(f'deck0m2/{n_card_to_string(i)}.jpg', img)
 
 
 def generate_cards(n=1, layers=3, ang = True):
@@ -223,27 +233,30 @@ def generate_cards(n=1, layers=3, ang = True):
     scales= np.random.uniform(0.9,1.1,n)
     if layers == 1:
         inp_images = sorted([file for file in glob.glob("./deck0m1/*.jpg")], key = string_to_n_card)
+        inp_images = [cv2.imread(file, cv2.IMREAD_GRAYSCALE)[232:488,232:488] for file in inp_images]
     elif layers == 3:
         inp_images = sorted([file for file in glob.glob("./deck0/*.jpg")], key = string_to_n_card)
-    inp_images = [cv2.imread(file) for file in inp_images]
+        inp_images = [cv2.imread(file)[232:488,232:488] for file in inp_images]
     image_shape = inp_images[0].shape
-
+    '''
     marg = 5
     max_tr_x = int(image_shape[0]/2-image_shape[0]/marg)
     max_tr_y = int(image_shape[1]/2-image_shape[1]/marg)
     tr_x = np.random.randint(0,max_tr_x,n)
     tr_y = np.random.randint(0,max_tr_y,n)
-
+    '''
+    tr_x = np.zeros(n)
+    tr_y = np.zeros(n)
     images = [transform_img(inp_images[cards[i]-1], angles[i], scales[i], (tr_x[i], tr_y[i]))
               for i in range(len(cards))]
-
     return np.array(images), np.array(cards)
 
 '''
 inp = 3
 while inp == 1 or inp == 3:
-    ret = generate_cards(1, inp, False)
+    ret = generate_cards(1, inp)
     show_image(ret[0][0], 'generated card', 100)
+    print(ret[0][0].shape)
     inp = int(input('inp: '))
 '''
 
@@ -253,3 +266,5 @@ ret = generate_cards(1000, 3)
 print(type(ret[0][0]), type(ret[1][0]))
 print("--- %s seconds ---" % (time.time() - start))
 '''
+
+import_deck(path = './deck_thr', url = url, start = 21)
