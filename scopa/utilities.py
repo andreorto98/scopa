@@ -103,6 +103,14 @@ def get_area(min_area, img = None, url='', save_img=None):
     assert(len(contours)==1)
     return cv2.contourArea(contours[0])
 
+def handle_border_problems(c_x,c_y):
+    if c_x-128<0:       dx = 128-c_x+1
+    elif c_x+128>720:  dx = -(128-720+c_x)-1
+    else:               dx = 0
+    if c_y -128<0:      dy = 128-c_y+1
+    elif c_y+128>720:   dy = -(128-720+c_y)-1
+    else:               dy = 0
+    return int(dx),int(dy)
 
 def get_cards(img, min_area, verbouse=False, to_model=False, margin=25):
 
@@ -181,9 +189,16 @@ def get_cards(img, min_area, verbouse=False, to_model=False, margin=25):
             y_conf = int(rect[0][1]) - h
             #cv2.circle(out, (x_conf, y_conf), 4, (255,0,0),-1)
             out = cv2.inRange(out, np.array([1,1,1]), np.array([out[y_conf,x_conf,0]-margin, out[y_conf,x_conf,1]-margin, 255]))
-            out = out[int(rect[0][1])-128:int(rect[0][1])+128,int(rect[0][0])-128:int(rect[0][0])+128]
+            #print(rect[0][0],int(rect[0][0])-128)
+            #print(rect[0][1],int(rect[0][1])-128)
+            dx,dy = handle_border_problems(rect[0][0], rect[0][1])
+            #print(dx, dy, rect[0][0]+dx)
+            if (dx,dy) != (0,0):
+                out = cv2.warpAffine(out, np.float32([[1,0,dx], [0,1,dy]]), out.shape[0:2])
+                print(dy+int(rect[0][1])-128, dy+int(rect[0][1])+128, dx+int(rect[0][0])-128, dx+int(rect[0][0])+128)
+            out = out[dy+int(rect[0][1])-128:dy+int(rect[0][1])+128,dx+int(rect[0][0])-128:dx+int(rect[0][0])+128]
             #show_image(out)
-
+        #print(out.shape)
         cards_img.append(out)
 
     if verbouse:
@@ -196,5 +211,6 @@ def get_cards(img, min_area, verbouse=False, to_model=False, margin=25):
         print(f'Number of founded cards: {n_cards}')
         for i, imm in enumerate(cards_img):
             show_image(imm, f'Card {i} of {n_cards}')
+
 
     return np.array(cards_img)

@@ -5,6 +5,7 @@ from matplotlib import pyplot as plt
 import cv2
 import sys
 import time
+from sklearn import metrics
 
 #from math import *
 
@@ -21,13 +22,14 @@ print('start time')
 start = time.time()
 
 # Generate training data
-train_data, target = generate_cards(n_samples, 3, False)
+train_data, target = generate_cards(n_samples, 3, True)
 
 print('cards_generated')
 print("--- %s seconds ---" % (time.time() - start))
 
 print(f'Dimension of train_data (MB): {sys.getsizeof(train_data)/1e6:.0f}', train_data.shape)
 
+'''
 # Reduce dimensionality of the image
 train_data = np.array(MaxPooling2D(pool_size=(2,2), strides=None,
                       data_format='channels_last')(train_data))
@@ -39,7 +41,7 @@ print("--- %s seconds ---" % (time.time() - start))
 # it takes 6.6 seconds for layers=3, n_samples=1000
 
 print(f'Dimension of pooled train_data (MB): {sys.getsizeof(train_data)/1e6:.0f}')
-
+'''
 
 '''     MODEL1:
         Each image contains one card.
@@ -80,7 +82,7 @@ if model1:
     model.compile(loss="categorical_crossentropy", optimizer='adam',metrics=['categorical_accuracy'])
 
     model.summary()
-    history = model.fit(train_data, labels, validation_split=0.8, epochs= 15, verbose=1)
+    history = model.fit(train_data, labels, validation_split=0.8, epochs= 6, verbose=1)
     '''
     plt.plot(history.history["categorical_accuracy"], label='Accuracy')
     plt.plot(history.history["val_categorical_accuracy"], label='Val Accuracy')
@@ -92,15 +94,12 @@ if model1:
     print("--- %s seconds ---" % (time.time() - start))
 
     test_data, target = generate_cards(n_samples, 3, False)
-    test_data = np.array(MaxPooling2D(pool_size=(2,2), strides=None,
-                          data_format='channels_last')(test_data))
-
+    
     test_pred = model.predict(test_data)
     test_pred = np.array([np.argmax(test_pred[i]) for i in range(len(test_pred))])
     test_label = np.array([card_to_suit(card) for card in target])
     test_label = np.array([np.argmax(test_label[i]) for i in range(len(test_label))])
 
-    from sklearn import metrics
 
     print(f'Accuracy test set:\t{metrics.accuracy_score(test_label, test_pred):.1%}')
     print('val_categorical_accuracy')
@@ -108,4 +107,9 @@ if model1:
     print('categorical_accuracy')
     print(history.history["categorical_accuracy"])
 
-    print('----------------------------------------------')
+    '''
+    comments:
+        - google colab non regge più di 6000 immagini e con solo queste overfitto e non traino
+        - con 20000 ci mette un bel po' ma sembra allenarsi, anche se dopo due ore ho un'accruraci del 38%
+
+    '''

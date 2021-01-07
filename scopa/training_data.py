@@ -226,8 +226,8 @@ def generate_cards(n=1, layers=3, ang = True):
         angles = np.full(n, 0.)
     scales= np.random.uniform(0.9,1.1,n)
     if layers == 1:
-        inp_images = sorted([file for file in glob.glob("./deck0m1/*.jpg")], key = string_to_n_card)
-        inp_images = [cv2.imread(file, cv2.IMREAD_GRAYSCALE)[232:488,232:488] for file in inp_images]
+        inp_images = sorted([file for file in glob.glob("./deck_thr/*.jpg")], key = string_to_n_card)
+        inp_images = [cv2.imread(file, cv2.IMREAD_GRAYSCALE) for file in inp_images]
     elif layers == 3:
         inp_images = sorted([file for file in glob.glob("./deck0/*.jpg")], key = string_to_n_card)
         inp_images = [cv2.imread(file)[232:488,232:488] for file in inp_images]
