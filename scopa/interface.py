@@ -41,7 +41,7 @@ if __name__ == '__main__':
             inp = 1
         import_deck('./new_deck', url, start = inp)
         print('new_deck has been correctly imported.\n \
-               Run the notebooks to save the models in ./new_models')
+               Run the notebooks and save the models in ./new_models')
         path_to_models = './new_models'
         inp = input('Proceed? (y,n): ')
         if inp != 'y':
