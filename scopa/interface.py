@@ -1,12 +1,9 @@
 import argparse
-import cv2
 import sys
 
 from scopa.utilities import get_area, import_deck, Match
 
 optimal_area = 21500
-
-# export PYTHONPATH=/Users/andrea/Desktop/computing_methods/scopa
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(description="This is a program that can play 'scopa l'asso'.\
@@ -39,7 +36,7 @@ if __name__ == '__main__':
             inp = 1
         import_deck('./new_deck', url, start = inp)
         print('new_deck has been correctly imported.\n \
-               Run the notebooks and save the models in ./new_models')
+        Run the notebooks and save the models in ./new_models')
         path_to_models = './new_models'
         inp = input('Proceed? (y,n): ')
         if inp != 'y':

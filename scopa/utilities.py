@@ -767,8 +767,6 @@ class Match:
             self._cpu_score = self._cpu_score +1
 
         print('--- end of cpu turn ---')
-        print(f'cards in table: {self._table.cards}')
-        print(f'cards in cpu_deck: {self._cpu_deck.cards}')
 
     def play_card_outcome(self, card):
 
@@ -795,6 +793,7 @@ class Match:
                     best_val = val
                     best_take = l
         return best_val, best_take
+
 
     def other_plays(self):
 
@@ -842,8 +841,6 @@ class Match:
             self._other_score = self._cpu_score +1
 
         print('--- end of other turn ---')
-        print(f'cards in table: {self._table.cards}')
-        print(f'cards in other_deck: {self._other_deck.cards}')
 
     def mano(self, url, min_area, margin, path_to_models):
 
