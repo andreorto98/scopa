@@ -2,8 +2,13 @@ import sys
 import numpy as np
 import cv2
 import urllib.request
+import re
+import logging
 from tensorflow.keras.models import load_model, Model
 from itertools import compress, product
+
+logging.getLogger('tensorflow').disabled = True
+
 
 def show_image(img, window_name = 'image', wait_key = 0):
 
@@ -290,12 +295,21 @@ def convert_card(input):
 
 
 def string_to_n_card(str):
+
+    '''Function returning the number (1->40) related to a card.
+    This is used in generate_cards to order the cards.
+
+    :param str: string describing the card; the format can be 'n_suit' or a
+                path like '.path/n_suit.jpg'
+    :type str: string
+    '''
+
     if str.startswith('.'):
          words = re.split('_|/|.j', str)[-3:-1]
     else: words = str.split('_')
     suit_to_n = {'hearts':0, 'diamonds':10, 'clubs':20, 'spades':30}
     return int(words[0])+suit_to_n[words[1]]
-    # serve a generate_cards
+
 
 def generate_cards(n=1, layers=3, ang = True, traslate=False):
 
@@ -471,7 +485,7 @@ def image_to_cards(img, min_area, margin, path_to_models = './models'):
         freq_i = np.bincount(c[i])
         found_card = convert_card(int(np.argmax(freq_i)))
         # if there are equal frequences the first one is returned.
-        print(convert_card(found_card), c[i], max(freq_i))
+        print(convert_card(found_card))
         sure_cards.append(found_card)
 
     inp = input('Have the cards been correctly recognised? (y,n) [y]')
@@ -776,8 +790,6 @@ class Match:
                 val  = self.card_value(card, in_hand = True)
                 for c in l:
                     val = val + self.card_value(c)
-                    print(f'\t\tc = {c}, val_c = {self.card_value(c)}')
-                print(f'\tcard = {card}, val = {val:.2f}, l = {l}')
                 if val>best_val:
                     best_val = val
                     best_take = l
@@ -845,7 +857,7 @@ class Match:
             self.cpu_plays()
             self.other_plays()
 
-    def end_match(self):
+    def end_match(self, url, min_area, margin, path_to_models):
 
         '''Method calculating scores at the end of the match.
         '''
@@ -890,7 +902,7 @@ class Match:
         inp = input('Do you want to continue? (y,n) [y]: ')
         if (inp == 'y' or inp ==''):
             new_mat = Match(self._cpu_score, self._other_score)
-            new_mat()
+            new_mat(url, min_area, margin, path_to_models)
         elif inp == 'n':
             if self._cpu_score == self._other_score:
                 print('Match ended with tie')
@@ -915,7 +927,7 @@ class Match:
             self.mano(url, min_area, margin, path_to_models)
             t=t+1
 
-        self.end_match()
+        self.end_match(url, min_area, margin, path_to_models)
 
     def __add__(self, other_match):
         return Match(self._cpu_score+other_match.cpu_score, self._other_score+other_match.other_score)

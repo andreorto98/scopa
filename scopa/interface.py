@@ -23,15 +23,13 @@ if __name__ == '__main__':
     url = args.url
     default_deck = True if args.deck == 'default' else False
 
-    #input_area= 21500
-
     print('Please, Insert a card')
     input_area = get_area(url)
     print(f'Detected area: {input_area}')
 
     while input_area < optimal_area*0.93 or input_area > optimal_area*1.07:
-        print(f'Your_card_areas/Desidered_card_areas = {input_area/optimal_area}\t \
-              Must be in [{optimal_area*0.95}, {optimal_area*1.05}]')
+        print(f'Your_card_areas/Desidered_card_areas = {input_area/optimal_area}\n\
+              Must be in [0.93, 1.07]')
         input_area = get_area(url)
 
     if not default_deck:
