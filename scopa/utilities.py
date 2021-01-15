@@ -618,6 +618,7 @@ class Match:
     * play_card_outcome
     * other_plays
     * mano
+    * end_game
 
     Moreover the special methods __call__ and __add__ are implemented.
     '''
