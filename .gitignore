@@ -3,7 +3,8 @@ docs/_build/
 note.txt
 scopa/img
 prova*
-scopa/v_*
+scopa/v
+report
 
 ### macOS ###
 # General
